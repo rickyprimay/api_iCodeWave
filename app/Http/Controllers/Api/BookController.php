@@ -9,6 +9,12 @@ use Illuminate\Support\Facades\Validator;
 
 class BookController extends Controller
 {
+
+    protected $imageUrls = [
+        'https://ebook.bungatujuh.sch.id/lib/minigalnano/createthumb.php?filename=images/docs/cover_atomic_habits_perubahan_kecil_yang_memberikan_hasil_luar_biasa.jpg&width=200',
+        'https://cdn.gramedia.com/uploads/items/9786020386201_Harry-Potter-.jpg',
+    ];
+
     public function index()
     {
         return Book::all();
@@ -17,7 +23,6 @@ class BookController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'image' => 'required|string',
             'name' => 'required|string',
             'author' => 'required|string',
             'release_date' => 'required|date',
@@ -31,7 +36,15 @@ class BookController extends Controller
             ], 422); 
         }
 
-        $book = Book::create($request->all());
+        $imageUrl = $this->imageUrls[array_rand($this->imageUrls)];
+
+        $book = Book::create([
+            'image' => $imageUrl,
+            'name' => $request->name,
+            'author' => $request->author,
+            'release_date' => $request->release_date,
+        ]);
+
         return response()->json($book, 201);
     }
 
@@ -44,7 +57,6 @@ class BookController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'image' => 'required|string',
             'name' => 'required|string',
             'author' => 'required|string',
             'release_date' => 'required|date',
@@ -59,7 +71,9 @@ class BookController extends Controller
         }
 
         $book = Book::findOrFail($id);
-        $book->update($request->all());
+
+        $book->update($request->except('image'));
+
         return response()->json($book);
     }
 
